@@ -1,0 +1,36 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+
+const root = process.cwd();
+const read = f => fs.readFileSync(path.join(root,f),'utf8');
+const pkg = JSON.parse(read('package.json'));
+const render = read('render.yaml');
+const docker = read('Dockerfile');
+const env = read('.env.example');
+const server = read('server.js');
+const readme = read('README.md');
+
+assert.equal(pkg.scripts.start, 'node server.js');
+assert.match(pkg.scripts.test, /test:phase11/);
+assert.match(pkg.scripts.test, /test:phase12/);
+assert.match(pkg.scripts.test, /test:phase13/);
+assert.match(pkg.scripts.test, /test:phase14/);
+assert.match(render, /healthCheckPath:\s*\/api\/health/);
+assert.match(render, /runtime:\s*docker/);
+assert.match(render, /DATABASE_URL/);
+assert.match(render, /SESSION_SECRET/);
+assert.match(docker, /NODE_ENV=production/);
+assert.match(docker, /CMD \["node", "server\.js"\]/);
+assert.match(docker, /EXPOSE 3000/);
+assert.match(server, /app\.get\('\/api\/health'/);
+assert.match(server, /app\.set\('trust proxy',1\)/);
+assert.match(server, /helmet\(/);
+assert.match(env, /ADMIN_PASSWORD=SET_A_STRONG_PASSWORD/);
+assert.match(env, /SESSION_SECRET=SET_A_LONG_RANDOM_SECRET/);
+assert.match(env, /DATABASE_URL=postgresql/);
+assert.match(readme, /Render/);
+assert.match(readme, /Health check/);
+assert.match(readme, /DATABASE_URL/);
+assert.match(readme, /GameTrollAdmin/);
+console.log('PHASE14 17/17 PASS');
